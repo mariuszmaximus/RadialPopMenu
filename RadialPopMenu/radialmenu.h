@@ -2,7 +2,7 @@
 #define RADIALMENU_H
 
 #include <QWidget>
-#include <QToolButton>
+#include <QToolButton> 
 #include <QTimeLine> 
 
 class QVariantAnimation;
@@ -82,7 +82,7 @@ protected:
     bool posInCircle(const QPoint &pos) const;
 
 private:
-    qreal paintOpacaty = 1.0;
+    qreal paintOpacaty = 1.0; 
 };
 
 #endif // RADIALMENU_H

@@ -47,7 +47,7 @@ protected:
             QMouseEvent * me = static_cast<QMouseEvent *>(e);
             if(me->button() == Qt::LeftButton)
             {
-                oldMousePos = me->globalPos();
+                oldMousePos = me->globalPosition().toPoint();
                 mousePressed = true;
             }
         }
@@ -56,7 +56,7 @@ protected:
             if(mousePressed)
             {
                 QMouseEvent * me = static_cast<QMouseEvent *>(e);
-                QPoint delta = QPoint(me->globalPos() - oldMousePos);
+                QPoint delta = QPoint(me->globalPosition().toPoint() - oldMousePos);
                 // 触发拖拽距离判定  || Determines whether the drag distance threshold is met
                 if(!startDrag)
                     startDrag = std::max(std::abs(delta.x()), std::abs(delta.y())) >= QApplication::startDragDistance();
@@ -64,7 +64,7 @@ protected:
                 {
                     QWidget * w = moveTop ? this->window() : this;
                     w->move(w->pos() + delta);
-                    oldMousePos = me->globalPos();
+                    oldMousePos = me->globalPosition().toPoint();
                 }
             }
             break;
