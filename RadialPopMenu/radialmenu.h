@@ -2,8 +2,8 @@
 #define RADIALMENU_H
 
 #include <QWidget>
-#include <QToolButton> 
-#include <QTimeLine> 
+#include <QToolButton>
+#include <QTimeLine>
 
 class QVariantAnimation;
 class CircleToolButton;

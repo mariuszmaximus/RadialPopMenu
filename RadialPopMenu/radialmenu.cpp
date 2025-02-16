@@ -62,8 +62,16 @@ protected:
                     startDrag = std::max(std::abs(delta.x()), std::abs(delta.y())) >= QApplication::startDragDistance();
                 if(startDrag)
                 {
-                    QWidget * w = moveTop ? this->window() : this;
-                    w->move(w->pos() + delta);
+                    QWidget *w = moveTop ? this->window() : this;
+                    QPoint newPos = w->pos() + delta;
+                    // screen size
+                    QRect screenGeometry = QApplication::primaryScreen()->geometry();
+                    QSize windowSize = w->size();
+                    // limit move to screen
+                    newPos.setX(std::clamp(newPos.x(), screenGeometry.left(), screenGeometry.right() - windowSize.width()));
+                    newPos.setY(std::clamp(newPos.y(), screenGeometry.top(), screenGeometry.bottom() - windowSize.height()));
+                    // 
+                    w->move(newPos);
                     oldMousePos = me->globalPosition().toPoint();
                 }
             }
