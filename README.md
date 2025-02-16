@@ -31,3 +31,35 @@
 
 尽管QTimeLine的接口更丰富，但默认情况下，动画的精度要比QVariantAnimation更差，能明显看出卡顿，因此使用QVariantAnimation实现进度变化，使用QTimeLine计算实际的坐标
 
+# RadialPopMenu
+Radial Popup Menu
+
+![popmenu](https://github.com/user-attachments/assets/53a60501-f0ac-4b06-a73e-8cfeddef706a)
+
+## Supported Features:
+
+* The starting angle and angle range of popup options can be set.
+
+* Holding the center button allows dragging the window.
+
+* Animation support, with configurable animation duration and delayed popup of options.
+
+* Menu layout alignment and margins can be adjusted for flexible placement in different scenarios.
+
+## Incomplete Parts
+
+* The animation currently only supports linear animation.
+
+* The circular button is implemented using `QToolButton`, but it does not support the default style and needs to be customized manually.
+
+* When the expansion angle equals `2PI`, the first and last items overlap. This is not specially handled to accommodate different use cases.
+
+## Animation Implementation Principle
+
+To support delayed intervals when menu items pop up, a `QVariantAnimation` is used to trigger value changes in the range `[0,1]`. The animation duration covers the entire time from clicking the button to all menu items being fully expanded, which differs from the actual animation duration setting.
+
+When the animation value changes, the current animation time is obtained. Subtracting the delay time of each menu item gives the actual animation time for that item.
+
+A `QTimeLine` is used to get the progress at a specific moment and convert it into coordinates.
+
+Although `QTimeLine` provides richer interfaces, its default animation precision is lower than `QVariantAnimation`, resulting in noticeable lag. Therefore, `QVariantAnimation` is used to control the progress change, while `QTimeLine` is used to calculate the actual coordinates.
