@@ -8,10 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-add_library(RadialPopMenu    
-    radialmenu.h
-    radialmenu.cpp
-)
-target_link_libraries(RadialPopMenu PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)    
 
-target_include_directories(RadialPopMenu PUBLIC ./)
+add_executable(RadialPopMenuExample
+    main.cpp
+    res.qrc
+)    
+target_link_libraries(RadialPopMenuExample PRIVATE Qt${QT_VERSION_MAJOR}::Widgets RadialPopMenu)    
