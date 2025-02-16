@@ -10,6 +10,8 @@
 #include <QDebug>
 #include <QMouseEvent>
 #include <QApplication>
+#include <QPainterPath>
+
 
 static constexpr qreal _2PI = 3.1415926 * 2;
 
@@ -25,13 +27,13 @@ struct RadialMenu::ActioItem
     QPoint endPos;
 };
 
-// 跟菜单，处理拖拽移动窗口
+// 跟菜单，处理拖拽移动窗口  || Root menu, handles dragging to move the window
 class RadialMenuRoot : public CircleToolButton
 {
 public:
     using CircleToolButton::CircleToolButton;
 
-    // 是否移动menu的顶层窗口，方便拖拽
+    // 是否移动menu的顶层窗口，方便拖拽  || Determines whether to move the menu's top-level window for easier dragging
     void setMoveTopWindow(bool top){
         moveTop = top;
     }
@@ -55,7 +57,7 @@ protected:
             {
                 QMouseEvent * me = static_cast<QMouseEvent *>(e);
                 QPoint delta = QPoint(me->globalPos() - oldMousePos);
-                // 触发拖拽距离判定
+                // 触发拖拽距离判定  || Determines whether the drag distance threshold is met
                 if(!startDrag)
                     startDrag = std::max(std::abs(delta.x()), std::abs(delta.y())) >= QApplication::startDragDistance();
                 if(startDrag)
@@ -80,8 +82,8 @@ protected:
     }
     bool hitButton(const QPoint &pos) const
     {
-        // 如果处于拖拽中，这不处理按下逻辑
-        // 这种处理方式可能有问题
+        // 如果处于拖拽中，这不处理按下逻辑  || Ignores button press logic while dragging
+        // 这种处理方式可能有问题  || This approach may have issues
         if(startDrag)
             return false;
         return CircleToolButton::hitButton(pos);
@@ -107,9 +109,9 @@ RadialMenu::RadialMenu(QWidget *parent)
 
     connect(rootButton, &CircleToolButton::clicked, this, &RadialMenu::onMenuClicked);
 
-    // 使用QVariantAnimation触发完整动画进度
-    // 因为可能设置延迟，所以有时间差
-    // 使用QTimeLine计算当前进度的时间，不参与动画
+    // 使用QVariantAnimation触发完整动画进度  || Uses QVariantAnimation to trigger full animation progress
+    // 因为可能设置延迟，所以有时间差  || Time lag exists due to possible delay settings
+    // 使用QTimeLine计算当前进度的时间，不参与动画  || Uses QTimeLine to calculate the current progress time, not part of the animation
     progressAnimation = new QVariantAnimation(this);
     progressAnimation->setStartValue(0.0);
     progressAnimation->setEndValue(1.0);
@@ -119,7 +121,7 @@ RadialMenu::RadialMenu(QWidget *parent)
 
 RadialMenu::~RadialMenu()
 {
-    // 不关注QAction的所有权
+    // 不关注QAction的所有权  || Does not manage QAction ownership
     qDeleteAll(allActionItem);
     allActionItem.clear();
 }
@@ -229,7 +231,7 @@ void RadialMenu::paintEvent(QPaintEvent *)
 
 void RadialMenu::onMenuClicked()
 {
-    // 动画时长小，不处理
+    // 动画时长小，不处理  || Skip processing if animation duration is too short
     if(animationDuration <= 0)
     {
         doLayout();
@@ -237,7 +239,7 @@ void RadialMenu::onMenuClicked()
     }
     if(rootButton->isChecked())
     {
-        // 展开
+        // 展开  || Expand
         if(progressAnimation->state() == QAbstractAnimation::Running)
         {
             progressAnimation->setPaused(true);
@@ -252,7 +254,7 @@ void RadialMenu::onMenuClicked()
     }
     else
     {
-        // 折叠
+        // 折叠  || Collapse
         if(progressAnimation->state() == QAbstractAnimation::Running)
         {
             progressAnimation->setPaused(true);
@@ -283,11 +285,11 @@ QSize RadialMenu::doLayout(bool calcOnly)
     if(!calcOnly && !this->size().isValid())
         return QSize();
 
-    // 布局
-    // 先将所有控件以(0,0)为中心布局，计算展开后所有控件的区域
-    // 再将显示区域对齐到窗口区域，计算偏移
-    // 将所有控件移动偏移到最终位置
-    // item_rects前面是action的区域信息，最后一个是中心菜单区域
+    // 布局  || Layout setup
+    // 先将所有控件以(0,0)为中心布局，计算展开后所有控件的区域  || First, layout all controls centered at (0,0), calculating the expanded region
+    // 再将显示区域对齐到窗口区域，计算偏移  || Then align the display area with the window area and compute the offset
+    // 将所有控件移动偏移到最终位置  || Move all controls to their final positions
+    // item_rects前面是action的区域信息，最后一个是中心菜单区域  || item_rects contains action area information, with the last one being the central menu area
     QVector<QPair<QRect, QRect>> item_rects;
     item_rects.resize(allActionItem.count() + 1);
 
@@ -301,27 +303,26 @@ QSize RadialMenu::doLayout(bool calcOnly)
     qreal offset = _startAngle;
     for(int i = 0 ; i < count; i++)
     {
-        // 起始区域
+        // 起始区域  || Initial area
         QPair<QRect, QRect> & button_rects = item_rects[i];
         button_rects.first = allActionItem[i]->button->rect();
         button_rects.first.moveCenter(QPoint(0, 0));
 
-        // 展开区域
+        // 展开区域  || Expanded area
         button_rects.second = button_rects.first;
         qreal angle = angle_step * i + offset;
         qreal dx = std::cos(angle) * radialDistance;
         qreal dy = std::sin(angle) * radialDistance;
         button_rects.second.moveCenter(QPointF(dx, dy).toPoint());
 
-        // 所有控件区域
+        // 所有控件区域  || Total area containing all controls
         bounding = bounding.united(button_rects.second);
     }
 
     if(calcOnly)
     {
-        // 直接返回容纳所有控件的size
+        // 直接返回容纳所有控件的size  || Directly return the size accommodating all controls
         int left = 0, top = 0, right = 0, bottom = 0;
-        getContentsMargins(&left, &top, &right, &bottom);
         return bounding.size() + QSize(left + right, top + bottom);
     }
     else
@@ -346,32 +347,32 @@ QSize RadialMenu::doLayout(bool calcOnly)
                 item->button->setGeometry(QRect(item->startPos, button_rects.second.size()));
                 item->button->setOpacity(0.0);
             }
-
         }
         rootButton->move(item_rects.last().first.topLeft() + delta);
         rootButton->raise();
         return QSize(layout_bounding.right(), layout_bounding.bottom());
     }
 }
+
 void RadialMenu::onAnimationValueChanged(QVariant)
 {
-    // 动画时间
+    // 动画时间  || Animation time
     int time = progressAnimation->currentTime();
     const int count = allActionItem.count();
     for(int i = 0 ; i< count; i++)
     {
         ActioItem * item = allActionItem[i];
-        // 对应action的实际时间
+        // 对应action的实际时间  || Actual time for corresponding action
         int real_time = (time - actionDelay * i);
         if(time <= 0)
         {
-            // 此时对应action延时还未结束
+            // 此时对应action延时还未结束  || The delay for this action has not ended yet
             item->button->move(item->startPos);
             item->button->setOpacity(0.0);
         }
         else
         {
-            // action实际进度
+            // action实际进度  || Actual progress of the action
             qreal progress = baseTimeLine->valueForTime(real_time);
             QPoint curr_pos = pointInterpolate(item->startPos, item->endPos, progress);
             item->button->move(curr_pos);
@@ -390,7 +391,6 @@ bool CircleToolButton::hitButton(const QPoint &pos) const
 {
     return posInCircle(pos);
 }
-
 void CircleToolButton::paintEvent(QPaintEvent *)
 {
     QRect rect = this->contentsRect();
@@ -404,7 +404,7 @@ void CircleToolButton::paintEvent(QPaintEvent *)
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
 
-    // 悬停状态，但没有在圆形范围内，去掉悬停状态
+    // 悬停状态，但没有在圆形范围内，去掉悬停状态  || Remove hover state if cursor is not within the circular region
     if(opt.state & QStyle::State_MouseOver && !posInCircle(this->mapFromGlobal(QCursor::pos())))
         opt.state &= ~QStyle::State_MouseOver;
     p.setClipPath(path);
@@ -415,7 +415,7 @@ bool CircleToolButton::event(QEvent *e)
 {
     switch (e->type()) {
     case QEvent::HoverMove:
-        // 刷新，要动态计算是否悬停
+        // 刷新，要动态计算是否悬停  || Refresh, dynamically check hover state
         update();
         break;
     default:
