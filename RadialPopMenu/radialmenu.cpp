@@ -75,7 +75,7 @@ protected:
                     oldMousePos = me->globalPosition().toPoint();
                 }
             }
-            break;
+            break; 
         case QEvent::MouseButtonRelease:
         {
             if(static_cast<QMouseEvent *>(e)->button() == Qt::LeftButton)

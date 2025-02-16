@@ -2,6 +2,9 @@
 
 #include <QAction>
 #include <QApplication>
+#include <qcontainerfwd.h>
+#include <qnamespace.h>
+#include <qsize.h>
 
 int main(int argc, char *argv[])
 {

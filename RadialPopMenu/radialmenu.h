@@ -13,7 +13,7 @@ class RadialMenu : public QWidget
     Q_OBJECT
 
 public:
-    RadialMenu(QWidget *parent = nullptr);
+    RadialMenu(QWidget *parent = nullptr); 
     ~RadialMenu();
 
     // 设置菜单图标  || Sets the menu icon
